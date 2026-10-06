@@ -1,0 +1,26 @@
+/* Orbit Studio — brand tokens. Drop into :root / Tailwind theme. */
+:root{
+  /* Core */
+  --ivory:#F6F2EA; --warm-white:#FCFAF6; --cream:#EDE6DA; --warm-gray:#DBD5C9;
+  --navy-deep:#092D3F; --navy-medium:#1A445A; --navy-light:#2E6681;
+  /* Gold: THREE roles — never use --gold for small text on light backgrounds */
+  --gold:#D2A14F;        /* decorative fills, dots, rules; text only on navy (6.1:1) */
+  --gold-light:#E3B461;  /* gradients / hover on navy */
+  --gold-dark:#B77F31;   /* large display text only (3.1:1 on ivory) */
+  --gold-text:#8A5A14;   /* eyebrows, labels, links on light (5.3:1 on ivory) */
+  --muted-foreground:#3F5969; /* 6.6:1 on ivory */
+  --border:#DDD7CB; --destructive:#B3261E;
+  /* Type */
+  --font-sans:"Satoshi",ui-sans-serif,system-ui,sans-serif;     /* 400 / 500 / 700 ONLY */
+  --font-accent:"Instrument Serif",Georgia,serif;               /* italic accent words + quote marks */
+  --fw-regular:400; --fw-medium:500; --fw-bold:700;
+  --text-display:clamp(2.5rem,5.2vw,4.5rem);  /* H1  / lh 1.04 / -0.03em */
+  --text-h2:clamp(2rem,3.6vw,3.25rem);        /* H2  / lh 1.08 / -0.025em */
+  --text-h3:1.5rem; --text-body:1rem; --text-small:.875rem;
+  --text-eyebrow:.75rem;                      /* uppercase, +0.18em, 500 */
+  --radius:.5rem; --radius-pill:999px;
+}
+.accent{font-family:var(--font-accent);font-style:italic;font-weight:400;color:var(--gold-text);letter-spacing:-.01em}
+.on-navy .accent{color:var(--gold)}
+.eyebrow{font-size:var(--text-eyebrow);font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-text)}
+h1,h2,h3{font-family:var(--font-sans);font-weight:var(--fw-bold)}
