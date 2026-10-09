@@ -9,7 +9,7 @@
     //    with the lead's details pre-filled (the lead must press Send).
     FORM_ENDPOINT: "",
     // 2) Meta Pixel ID (Events Manager > Data sources). Leave empty to disable. Fires PageView, Lead, Contact.
-    PIXEL_ID: "",
+    PIXEL_ID: "28537280659269769",
     // 3) WhatsApp number that receives messages (country code, no plus).
     WHATSAPP: "917984430672"
   };
