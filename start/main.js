@@ -126,8 +126,13 @@
 
       if (!CONFIG.FORM_ENDPOINT) { busy = false; btn.disabled = false; label.textContent = old; success(d, "whatsapp"); return; }
 
-      fetch(CONFIG.FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(d) })
-        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); success(d, "api"); })
+      // Google Apps Script web apps cannot answer a CORS preflight, so they get a plain-text POST (no-cors) and an opaque reply counts as success.
+      var gas = /script\.google(usercontent)?\.com/.test(CONFIG.FORM_ENDPOINT);
+      var req = gas
+        ? fetch(CONFIG.FORM_ENDPOINT, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) })
+        : fetch(CONFIG.FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(d) });
+      req
+        .then(function (r) { if (!(gas && r.type === "opaque") && !r.ok) throw new Error("HTTP " + r.status); success(d, "api"); })
         .catch(function () {
           // never lose a lead: if the endpoint is unreachable, hand the details to WhatsApp instead
           errBox.textContent = "We couldn't reach our form server, so we opened WhatsApp with your details instead.";
