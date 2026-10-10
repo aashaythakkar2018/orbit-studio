@@ -97,6 +97,7 @@
       var t = "Hi Orbit Studio, I'm " + d.name + ". I'd like a free " + (d.intent || "strategy call") + ".\nNeed: " + d.service + (d.budget ? "\nBudget: " + d.budget : "") + (d.website ? "\nBrand: " + d.website : "") + "\nMy WhatsApp: +" + normalisePhone(d.phone) + (d.email ? "\nEmail: " + d.email : "") + (d.message ? "\nMessage: " + d.message : "");
       return "https://wa.me/" + CONFIG.WHATSAPP + "?text=" + encodeURIComponent(t);
     };
+    var waWin = null;
     var success = function (d, via) {
       track("Lead", { content_name: d.service, value: 0, currency: "INR", source: form.getAttribute("data-src") });
       var thanks = $(".thanks", card);
@@ -107,7 +108,11 @@
       thanks.focus({ preventScroll: true });
       card.scrollIntoView({ behavior: "smooth", block: "center" });
       try { sessionStorage.setItem("os_lead", "1"); } catch (e) {}
-      if (via === "whatsapp") window.open(waLink(d), "_blank", "noopener");
+      // every lead is handed to WhatsApp (+91 79844 30672): reuse the window opened during the click, else try again, else the thanks button does it
+      var url = waLink(d);
+      if (waWin && !waWin.closed) { try { waWin.opener = null; waWin.location.href = url; } catch (e) { window.open(url, "_blank"); } }
+      else { try { window.open(url, "_blank"); } catch (e) {} }
+      waWin = null;
     };
 
     form.addEventListener("submit", function (ev) {
@@ -122,6 +127,7 @@
       d.landing = location.pathname;
       d.phone_normalised = "+" + normalisePhone(d.phone);
       d.form = form.getAttribute("data-src");
+      try { waWin = window.open("about:blank", "_blank"); } catch (e) { waWin = null; }   // opened inside the click so popup blockers allow it
       busy = true; btn.disabled = true; var label = $("span", btn), old = label.textContent; label.textContent = "Sending...";
 
       if (!CONFIG.FORM_ENDPOINT) { busy = false; btn.disabled = false; label.textContent = old; success(d, "whatsapp"); return; }
@@ -135,8 +141,6 @@
         .then(function (r) { if (!(gas && r.type === "opaque") && !r.ok) throw new Error("HTTP " + r.status); success(d, "api"); })
         .catch(function () {
           // never lose a lead: if the endpoint is unreachable, hand the details to WhatsApp instead
-          errBox.textContent = "We couldn't reach our form server, so we opened WhatsApp with your details instead.";
-          errBox.classList.add("on");
           success(d, "whatsapp");
         })
         .then(function () { busy = false; btn.disabled = false; label.textContent = old; });
