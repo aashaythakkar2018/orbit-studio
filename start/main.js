@@ -7,7 +7,7 @@
     // 1) Where leads are POSTed as JSON. Paste a Formspree URL (https://formspree.io/f/xxxx), a Make/Zapier webhook,
     //    or a Google Apps Script web-app URL. While this is empty, the form falls back to opening WhatsApp
     //    with the lead's details pre-filled (the lead must press Send).
-    FORM_ENDPOINT: "",
+    FORM_ENDPOINT: "https://script.google.com/macros/s/AKfycbycGI9K1hhF-NTxDaV-y2Q9f7L7WoyWrSWjqTL0IyBnd0yGUEQzC3rp_Q5RkMAlH3x7/exec",
     // 2) Meta Pixel ID (Events Manager > Data sources). Leave empty to disable. Fires PageView, Lead, Contact.
     PIXEL_ID: "28537280659269769",
     // 3) WhatsApp number that receives messages (country code, no plus).
