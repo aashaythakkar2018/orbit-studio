@@ -24,6 +24,9 @@
     window.fbq("init", CONFIG.PIXEL_ID); window.fbq("track", "PageView");
   }
   var track = function (name, data) { try { if (window.fbq) window.fbq("track", name, data || {}); } catch (e) {} };
+  var trackCustom = function (name, data) { try { if (window.fbq) window.fbq("trackCustom", name, data || {}); } catch (e) {} };
+  // a lead is "qualified" when it states a budget of Rs 30,000 or more; forms with no budget field (contact) count as qualified
+  var isQualified = function (d) { return !d.budget ? true : !/^Under|Not sure/.test(d.budget); };
 
   /* ---------- UTM / click-id capture (kept for the whole session) ---------- */
   var keys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid"], store = {};
@@ -87,11 +90,11 @@
     var flag = function (name, bad) { var f = form.elements[name].closest(".fld"); f.classList.toggle("bad", bad); form.elements[name].setAttribute("aria-invalid", bad ? "true" : "false"); return bad; };
     var check = function () {
       var e = form.elements, bad = false;
-      var tests = { name: function (v) { return v.trim().length < 2; }, phone: function (v) { return !validPhone(v); }, email: function (v) { return !validEmail(v.trim()); }, service: function (v) { return !v; } };
+      var tests = { name: function (v) { return v.trim().length < 2; }, phone: function (v) { return !validPhone(v); }, email: function (v) { return !validEmail(v.trim()); }, service: function (v) { return !v; }, budget: function (v) { return !v; }, business: function (v) { return v.trim().length < 3; } };
       Object.keys(tests).forEach(function (n) { if (e[n] && e[n].required) bad = flag(n, tests[n](e[n].value)) || bad; });   // only validate what this form asks for
       return !bad;
     };
-    ["name", "phone", "email", "service"].filter(function (n) { return form.elements[n] && form.elements[n].required; }).forEach(function (n) { form.elements[n].addEventListener("input", function () { if (form.elements[n].closest(".fld").classList.contains("bad")) check(); }); form.elements[n].addEventListener("blur", function () { if (form.elements[n].value) check(); }); });
+    ["name", "phone", "email", "service", "budget", "business"].filter(function (n) { return form.elements[n] && form.elements[n].required; }).forEach(function (n) { form.elements[n].addEventListener("input", function () { if (form.elements[n].closest(".fld").classList.contains("bad")) check(); }); form.elements[n].addEventListener("blur", function () { if (form.elements[n].value) check(); }); });
 
     var waLink = function (d) {
       var t = "Hi Orbit Studio, I'm " + d.name + ". I'd like a free " + (d.intent || "strategy call") + ".\nNeed: " + d.service + (d.budget ? "\nBudget: " + d.budget : "") + (d.website ? "\nBrand: " + d.website : "") + "\nMy WhatsApp: +" + normalisePhone(d.phone) + (d.email ? "\nEmail: " + d.email : "") + (d.message ? "\nMessage: " + d.message : "");
@@ -99,7 +102,8 @@
     };
     var waWin = null;
     var success = function (d, via) {
-      track("Lead", { content_name: d.service, value: 0, currency: "INR", source: form.getAttribute("data-src") });
+      if (isQualified(d)) track("Lead", { content_name: d.service, value: 0, currency: "INR", source: form.getAttribute("data-src"), budget: d.budget || "" });
+      else trackCustom("LowBudgetLead", { content_name: d.service, source: form.getAttribute("data-src"), budget: d.budget || "" });   // keeps Meta's Lead signal for people who can pay
       var thanks = $(".thanks", card);
       $("[data-name]", thanks).textContent = d.name.split(" ")[0];
       $("[data-wa]", thanks).href = waLink(d);
@@ -125,6 +129,7 @@
       var d = {};
       $$("input,select,textarea", form).forEach(function (el) { if (el.name && el.name !== "company") d[el.name] = el.value.trim(); });
       d.landing = location.pathname;
+      if (d.business) d.message = "Business: " + d.business + (d.message ? " | " + d.message : "");
       d.phone_normalised = "+" + normalisePhone(d.phone);
       d.form = form.getAttribute("data-src");
       try { waWin = window.open("about:blank", "_blank"); } catch (e) { waWin = null; }   // opened inside the click so popup blockers allow it

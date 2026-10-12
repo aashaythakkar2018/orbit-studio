@@ -402,3 +402,5 @@ textarea:focus{outline:0;border-color:var(--gold-dark);box-shadow:0 0 0 3px rgba
 }
 @media (max-width:420px){.pf-grid{gap:10px}.pf-meta b{font-size:13.5px}}
 @media (prefers-reduced-motion:reduce){.pf-sheet-in{animation:none}}
+
+.from-line{display:inline-block;margin:0 0 16px;padding:7px 14px;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:4px;background:rgba(255,255,255,.55);font-size:14px;font-weight:500}.from-line b{font-weight:700}
