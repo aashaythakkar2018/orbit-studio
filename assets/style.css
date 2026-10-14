@@ -439,3 +439,8 @@ h1,h2,h3,h4,.lead,blockquote,.stmt,.tagline{text-wrap:balance}p{text-wrap:pretty
 
 }
 @media (prefers-reduced-motion:reduce){.orbit .rh,.orbit .it,.menu .rh,.menu .cw,.wa::after{animation:none!important}.menu .rh{transform:rotate(var(--start-angle))}.menu .cw{transform:rotate(var(--counter-offset))}.grain,.ticker .track,*{transition-duration:.01ms!important}}
+
+/* phones and tablets: drop the full-screen animated film grain (heavy blend layer) and keep the rest light */
+@media (max-width:900px),(hover:none){.grain{display:none}.nav{backdrop-filter:none;-webkit-backdrop-filter:none}}
+/* never let a decorative element widen the page on phones (overflow-x:clip keeps sticky + scroll triggers intact) */
+html,body,main{overflow-x:clip;max-width:100%}

@@ -4,6 +4,7 @@
   window.scrollTo(0, 0);
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const fine = matchMedia("(hover:hover) and (pointer:fine)").matches;
+  const SMALL = matchMedia("(max-width:900px)").matches || !fine; // phones and tablets: lighter preloader, lighter particles, no video
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   gsap.registerPlugin(ScrollTrigger);
@@ -158,11 +159,11 @@
   else {
     const pre = $("#pre"), vid = $("#pvid"), cnt = $("#cnt"), pbar = $("#pbar");
     const seen = false; // the full preloader plays on every load and refresh
-    const D = seen ? 2.4 : 4.4;
+    const D = seen ? 2.4 : SMALL ? 2.6 : 4.4;
 
     // generated video = ambient backdrop only; the orbit itself is live SVG so it never depends on autoplay
     const showVid = () => { if (vid.currentTime > 0 || !vid.paused) gsap.to(vid, { opacity: 0.9, duration: 1.4 }); };
-    if (!seen) { vid.addEventListener("playing", showVid, { once: true }); vid.play().catch(() => {}); } else vid.remove();
+    if (!seen && !SMALL) { vid.addEventListener("playing", showVid, { once: true }); vid.preload = "auto"; vid.load(); vid.play().catch(() => {}); } else vid.remove();
 
     const { sat, place } = makeSat($$("#pBack .sb"), $$("#pFront .sf"), 0);
     gsap.set($("#pNode"), { scale: 0, transformOrigin: "50% 50%" });
@@ -185,7 +186,7 @@
 
   /* hero orbit — particle globe ported from orbitstudio.co.in (rings + icons are pure CSS, see .orbit in style.css) */
   {
-    const box = $("#orbit"), globe = makeGlobe($("#globeCv"), 1200);
+    const box = $("#orbit"), globe = makeGlobe($("#globeCv"), SMALL ? 520 : 1200);
     if (!RM) {
       let vis = true;
       new IntersectionObserver((en) => { vis = en[0].isIntersecting; }).observe($("#hero"));
@@ -435,7 +436,7 @@
      Its satellite and the dotted planet keep moving for as long as the menu is open, and pause when it is closed. */
   const menu = $("#menu"), burger = $("#burger");
   let menuTl, menuOpen = false;
-  const msat = makeSat($$("#mBack .mb"), $$("#mFront .mf"), 1), mglobe = makeGlobe($("#mGlobe"), 1000);
+  const msat = makeSat($$("#mBack .mb"), $$("#mFront .mf"), 1), mglobe = makeGlobe($("#mGlobe"), SMALL ? 460 : 1000);
   if (!RM) gsap.ticker.add((_, dt) => { if (!menuOpen) return; msat.sat.a += 1.1 * (dt / 1000); msat.place(); mglobe.step(dt); });
   const setInert = (on) => $$("main,.foot,.nav,.fixed-cta,.wa,.skip").forEach((el) => (el.inert = on));
   const openMenu = () => {
@@ -544,7 +545,12 @@
   }
 
   /* ---------- boot: load first, init, then run the preloader ---------- */
-  const loaded = new Promise((r) => (document.readyState === "complete" ? r() : addEventListener("load", r, { once: true })));
+  // start as soon as fonts are ready (never wait on every image or video); hard cap keeps slow networks moving
   const fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-  Promise.race([Promise.all([loaded, fonts]), new Promise((r) => setTimeout(r, 6000))]).then(() => requestAnimationFrame(initPage));
+  let booted = false;
+  const boot = () => { if (booted) return; booted = true; requestAnimationFrame(initPage); };
+  Promise.race([fonts, new Promise((r) => setTimeout(r, 1500))]).then(boot);
+  // failsafe: if anything in the intro stalls, never leave a visitor on the loader
+  setTimeout(() => { const pre = document.getElementById("pre"); if (pre && document.body.classList.contains("is-loading")) { pre.remove(); document.body.classList.remove("is-loading"); if (lenis) lenis.start(); gsap.ticker.lagSmoothing(0); gsap.set([".hero *", "#nav", "#fcta", "#wa", "#orbit"], { clearProps: "all" }); } }, 12000);
+  addEventListener("load", () => { if (window.ScrollTrigger) ScrollTrigger.refresh(); }, { once: true });
 })();
