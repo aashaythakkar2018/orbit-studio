@@ -307,18 +307,8 @@
     });
     gsap.to("#sc", { rotation: 360, svgOrigin: "280 96", duration: 16, ease: "none", repeat: -1 });
 
-    // work: stacked cards + parallax
-    const cases = $$("[data-case]");
-    cases.forEach((c, i) => {
-      const img = $("img", c), box = $(".box", c), info = $$(".info > div", c), idx = $(".idx", c);
-      gsap.fromTo(img, { yPercent: -5 }, { yPercent: 5, ease: "none", scrollTrigger: { trigger: c, start: "top bottom", end: "bottom top", scrub: true } });
-      gsap.set(info, { y: 40, opacity: 0 });
-      ScrollTrigger.create({ trigger: c, start: "top 55%", once: true, onEnter: () => gsap.to(info, { y: 0, opacity: 1, duration: 1.2, ease: EASE, stagger: 0.1 }) });
-      gsap.set(img, { opacity: 0.001, scale: 1.3, filter: "blur(8px)" });
-      ScrollTrigger.create({ trigger: c, start: "top 85%", once: true, onEnter: () => gsap.to(img, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1, ease: IMG_EASE, onComplete: () => gsap.set(img, { clearProps: "opacity,filter" }) }) });
-      const next = cases[i + 1];
-      if (next) gsap.to(box, { scale: 0.93, opacity: 0.3, ease: "none", transformOrigin: "50% 100%", scrollTrigger: { trigger: next, start: "top bottom", end: "top top", scrub: true } });
-    });
+    // work: calm grid, one gentle fade-up per card
+    $$("[data-wcard]").forEach((c, i) => gsap.from(c, { y: 28, opacity: 0, duration: 1, ease: EASE, delay: (i % 2) * 0.08, scrollTrigger: { trigger: c, start: "top 90%", once: true }, clearProps: "opacity,transform" }));
 
     // steps slider
     const grid = $("#sgrid"), slider = $("#slider"), cells = $$(".cell", grid);
