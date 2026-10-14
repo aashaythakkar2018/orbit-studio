@@ -8,6 +8,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ ignoreMobileResize: true }); // the phone address bar collapsing must not re-fire or reset scroll animations
   ScrollTrigger.config({ ignoreMobileResize: true });
   const EASE = "expo.out";
 
@@ -327,6 +328,11 @@
   } else {
     $$(".stmt .rw").forEach((w) => (w.style.opacity = 1));
     $$("[data-count]").forEach((el) => odoShow(buildOdo(el)));
+    // Reduce Motion / battery saver is common on phones: keep a gentle one-time fade-in so the page still feels alive (no parallax, no loops)
+    const soft = $$("[data-fade],[data-rv],[data-wcard],.cell,.irow").filter((el) => !el.closest("#hero,#pre,.menu"));
+    soft.forEach((el) => { el.style.opacity = 0; el.style.transform = "translateY(14px)"; el.style.transition = "opacity .7s ease, transform .7s ease"; });
+    const io = new IntersectionObserver((en) => en.forEach((e) => { if (e.isIntersecting) { e.target.style.opacity = 1; e.target.style.transform = "none"; io.unobserve(e.target); } }), { rootMargin: "0px 0px -6% 0px" });
+    soft.forEach((el) => io.observe(el));
   }
 
     /* ---------- founder portrait ---------- */
